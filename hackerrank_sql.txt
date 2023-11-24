@@ -1,0 +1,79 @@
+QUE :  P(R) represents a pattern drawn by Julia in R rows. The following pattern represents P(5):
+
+* * * * * 
+* * * * 
+* * * 
+* * 
+*
+Write a query to print the pattern P(20).
+--------------------------------------------
+ANS :  DROP PROCEDURE IF EXISTS P;
+		delimiter $$
+		CREATE PROCEDURE P(R INT)
+		BEGIN
+			WHILE R > 0 DO
+			select repeat ('* ' ,R);
+			SET R := R - 1;
+			END WHILE;
+		END;
+		$$
+		delimiter ;
+		call P(20);
+======================================================================		
+QUE : P(R) represents a pattern drawn by Julia in R rows. The following pattern represents P(5):
+
+* 
+* * 
+* * * 
+* * * * 
+* * * * *
+Write a query to print the pattern P(20).
+------------------------------------------------------
+ANS : DROP PROCEDURE IF EXISTS P;
+delimiter $$
+CREATE PROCEDURE P(R INT)
+BEGIN
+    DECLARE S INT;
+    SET S = R + 1;
+    WHILE R > 0 DO
+    select repeat ('* ' ,(S - R));
+    SET R := R - 1;
+    END WHILE;
+END;
+$$
+delimiter ;
+call P(20);
+================================================================
+QUE : You are given a table, Functions, containing two columns: X and Y.
+COLUMN  TYPE
+X       integer
+y       integer
+Two pairs (X1, Y1) and (X2, Y2) are said to be symmetric pairs if X1 = Y2 and X2 = Y1.
+Write a query to output all such symmetric pairs in ascending order by the value of X. List the rows such that X1 ≤ Y1.
+Sample Input
+x y
+2 24
+4 22
+24 2
+22 4
+2 2
+2 2
+Sample Output
+2 2
+2 24
+4 22
+----------------------------------------
+ANS : with cte_1 as 
+(
+select x as x1 , y as y1 from functions
+where x <= y 
+union all 
+select y as x1 , x as y1 from functions 
+where x > y
+order by x1 , y1 asc
+),
+cte_2 as 
+( select x1,y1 ,row_number() over (partition by x1 , y1 order by x1 , y1 asc) as rnk 
+    from cte_1
+) select x1 , y1 from cte_2 where rnk = 2;
+================================================================================

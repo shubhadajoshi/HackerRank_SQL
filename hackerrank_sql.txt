@@ -208,9 +208,18 @@ Station.jpg
 
 where LAT_N is the northern latitude and LONG_W is the western longitude.
 ---------------------------------------------------------------
+ANS 1 : WITH COMMON TABLE EXPRESSION
 with cte_1 as (select lat_n ,
 row_number() over (order by lat_n) as rnk
 from station) 
 select round(lat_n,4) from cte_1
 where rnk = (select ((count(1) + 1)/ 2 ) from cte_1)
 ;
+---------------------------------------------------
+ANS 2 : WITH SUBQUERY
+select round(lat_n,4)
+from 
+(select lat_n ,
+row_number() over (order by lat_n) as rnk
+from station) a
+where rnk = (select ((count(1) + 1)/ 2) from station);

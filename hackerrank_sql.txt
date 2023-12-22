@@ -389,3 +389,73 @@ or count = 1
 order by total_challenges desc , hacker_id asc
 ;
 ----------------------------------------------------------------------------------
+Que : interviews
+Samantha interviews many candidates from different colleges using coding challenges and contests. Write a query to print the contest_id, hacker_id, name, and the sums of total_submissions, total_accepted_submissions, total_views, and total_unique_views for each contest sorted by contest_id. Exclude the contest from the result if all four sums are .
+
+Note: A specific contest can be used to screen candidates at more than one college, but each college only holds  screening contest.
+
+Input Format
+
+The following tables hold interview data:
+
+Contests: The contest_id is the id of the contest, hacker_id is the id of the hacker who created the contest, and name is the name of the hacker.
+
+Colleges: The college_id is the id of the college, and contest_id is the id of the contest that Samantha used to screen the candidates.
+
+Challenges: The challenge_id is the id of the challenge that belongs to one of the contests whose contest_id Samantha forgot, and college_id is the id of the college where the challenge was given to candidates.
+
+View_Stats: The challenge_id is the id of the challenge, total_views is the number of times the challenge was viewed by candidates, and total_unique_views is the number of times the challenge was viewed by unique candidates.
+
+Submission_Stats: The challenge_id is the id of the challenge, total_submissions is the number of submissions for the challenge, and total_accepted_submission is the number of submissions that achieved full scores.
+
+Sample Input
+
+Contests Table:Colleges Table:Challenges Table:View_Stats Table:Submission_Stats Table:
+
+Sample Output
+
+66406 17973 Rose 111 39 156 56
+66556 79153 Angela 0 0 11 10
+94828 80275 Frank 150 38 41 15
+Explanation
+
+The contest  is used in the college . In this college , challenges  and  are asked, so from the view and submission stats:
+
+Sum of total submissions 
+
+Sum of total accepted submissions 
+
+Sum of total views 
+
+Sum of total unique views 
+
+Similarly, we can find the sums for contests  and .
+---------------------------------------------------------------------------
+Ans: with cte_1 as
+(select col.contest_id as contest_id , COALESCE(sum(ss.total_submissions),0) as ts, COALESCE(sum(ss.total_accepted_submissions),0) as tas
+from challenges cha
+left join colleges col
+on col.college_id = cha.college_id
+left join submission_stats ss
+on cha.challenge_id = ss.challenge_id
+group by col.contest_id),
+cte_2 as
+(select col.contest_id as contest_id, COALESCE(sum(vs.total_views),0) as tv, COALESCE(sum(vs.total_unique_views),0) as tuv
+from challenges cha
+left join colleges col
+on col.college_id = cha.college_id
+left join View_Stats vs
+on cha.challenge_id = vs.challenge_id
+group by col.contest_id)
+select con.* , cte_1.ts , cte_1.tas , cte_2.tv , cte_2.tuv
+from contests con
+left join cte_1 cte_1
+on con.contest_id = cte_1.contest_id
+left join cte_2 cte_2
+on con.contest_id = cte_2.contest_id
+where (cte_1.ts != 0
+and cte_1.tas != 0
+and cte_2.tv != 0
+and cte_2.tuv != 0)
+order by contest_id;
+--------------------------------------------------------------------------------------------------
